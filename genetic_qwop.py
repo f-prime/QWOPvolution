@@ -90,33 +90,14 @@ class GeneticQWOP(object):
     def check_done(self):
         self.driver.get_screenshot_as_file('/tmp/qwop.png')
         img = Image.open('/tmp/qwop.png')
-        height = img.height
-        width = img.width
-        middle = int(width / 2)
-        start_x = middle - 130
-        start_y = 20
-
-        score_offset_x = 100
-        score_offset_y = 30
-        score = img.crop(
-                (start_x,
-                start_y,
-                start_x + score_offset_x, 
-                start_y + score_offset_y)
-        )
-      
-        score.save('/tmp/cropped_qwop.png')
-
-        cd_start_x = middle + 55
-        cd_start_y = int(height / 2) + 120
-
-        restart = pytesseract.image_to_string(img)
-        is_done = 'everyone is a winner' in restart or 'PARTICI PANT' in restart or 'PARTICIPANT' in restart or 'NATIONAL' in restart or 'HERO' in restart
-        score = pytesseract.image_to_string(score)
-        score_filtered = re.findall("\-?[0-9]+\.[0-9]+", score)
+        text_on_screen = pytesseract.image_to_string(img)
+        is_done = 'everyone is a winner' in text_on_screen or 'PARTICI PANT' in text_on_screen or 'PARTICIPANT' in text_on_screen or 'NATIONAL' in text_on_screen or 'HERO' in text_on_screen
+        
+        score_filtered = re.findall("(\-?[0-9]+\.[0-9]+) metres", text_on_screen)
+        print(score_filtered)
         if score_filtered:
             self.score = float(score_filtered[0])
-        if "NATIONAL" in restart or "HERO" in restart and self.score < 100:
+        if "NATIONAL" in text_on_screen or "HERO" in text_on_screen and self.score < 100:
             self.score = 100
         return is_done
         
@@ -145,7 +126,7 @@ class GeneticQWOP(object):
                 if self.score >= 2:
                     speed = self.score / delta
                 else:
-                    speed = 0
+                    speed = 0                
                 if speed > 1: # Usually this happens when the time gets messed up
                     speed = 0.03
                     
