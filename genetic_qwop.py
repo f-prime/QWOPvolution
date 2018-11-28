@@ -85,6 +85,7 @@ class GeneticQWOP(object):
         self.population = population
 
     def restart_game(self):
+        self.score = 0.0
         self.keyboard.tap_key(' ')
 
     def check_done(self):
@@ -117,34 +118,33 @@ class GeneticQWOP(object):
                 self.start_time = time.time()
                 while not is_done:
                     print("ELAPSED TIME:", time.time() - self.start_time)
-                    if time.time() - self.start_time > self.time_limit:
-                        print("TIME IS UP")
-                        self.keyboard.tap_key('r')
-                        break
                     is_done = self.check_done()
                 delta = time.time() - self.start_time                
-                if self.score >= 2:
-                    speed = self.score / delta
-                else:
-                    speed = 0                
-                if speed > 1: # Usually this happens when the time gets messed up
-                    speed = 0.03
-                    
-                print("RUN", self.score, delta, speed)
+
+                print("RUN", self.score, delta)
                 print("MOM", best_1)
                 print("DAD", best_2)
 
                 if not best_1:
-                    best_1 = (org, self.score, delta, speed)
+                    best_1 = (org, self.score, delta)
                 elif not best_2:
-                    best_2 = (org, self.score, delta, speed)
-                elif (speed > 0 and best_1[3] < speed) or (speed == 0 and best_1[1] >= self.score and best_1[3] == 0):
+                    best_2 = (org, self.score, delta)
+                elif best_1[1] >= 100 and self.score >= 100:
+                    if best_1[2] > delta and delta >= 60:
+                        print("Better time for Mom")
+                        best_2 = best_1
+                        best_1 = (org, self.score, delta)
+                elif best_2[1] >= 100 and self.score >= 100:
+                    if best_2[2] > delta and delta  >= 60:
+                        print("Better time for dad")
+                        best_2 = (org, self.score, delta)
+                elif self.score > 0 and best_1[1] < self.score:
                     print("NEW MOM")
                     best_2 = best_1
-                    best_1 = (org, self.score, delta, speed)
-                elif (speed > 0 and best_2[3] < speed) or (speed == 0 and best_2[1] >= self.score and best_2[3] == 0):
+                    best_1 = (org, self.score, delta)                    
+                elif self.score > 0 and best_2[1] < self.score:
                     print("NEW DAD")
-                    best_2 = (org, self.score, delta, speed)
+                    best_2 = (org, self.score, delta)
                 self.alive = False                
                 self.restart_game()
                 self.alive = True
@@ -154,19 +154,21 @@ class GeneticQWOP(object):
 
     def run(self, dna):
         print("New DNA")
-        while self.alive:
-            for keys in dna:
-                if not self.alive:
-                    break
-                for key in keys[0]:
-                    self.keyboard.press_key(key)
-                time.sleep(keys[1])
-                for key in keys[0]:
-                    self.keyboard.release_key(key)
-
+        try:
+            while self.alive:
+                for keys in dna:
+                    if not self.alive:
+                        break
+                    for key in keys[0]:
+                        self.keyboard.press_key(key)
+                    time.sleep(keys[1])
+                    for key in keys[0]:
+                        self.keyboard.release_key(key)
+        except Exception as e:
+            print("EXCEPTION")
+            print(e)
     def open_qwop(self):
         self.driver.get("http://www.foddy.net/Athletics.html")
-
 
 if __name__ == "__main__":
     GeneticQWOP().main()
