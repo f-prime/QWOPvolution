@@ -7,6 +7,10 @@ import _thread as thread
 import random
 import re
 import time
+try:
+    import Xlib.threaded # Linux compatability 
+except:
+    pass
 
 class GeneticQWOP(object):
     def __init__(self):
@@ -154,19 +158,16 @@ class GeneticQWOP(object):
 
     def run(self, dna):
         print("New DNA")
-        try:
-            while self.alive:
-                for keys in dna:
-                    if not self.alive:
-                        break
-                    for key in keys[0]:
-                        self.keyboard.press_key(key)
-                    time.sleep(keys[1])
-                    for key in keys[0]:
-                        self.keyboard.release_key(key)
-        except Exception as e:
-            print("EXCEPTION")
-            print(e)
+        while self.alive:
+            for keys in dna:
+                if not self.alive:
+                    break
+                for key in keys[0]:
+                    self.keyboard.press_key(key)
+                time.sleep(keys[1])
+                for key in keys[0]:
+                    self.keyboard.release_key(key)
+
     def open_qwop(self):
         self.driver.get("http://www.foddy.net/Athletics.html")
 
